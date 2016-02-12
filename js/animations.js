@@ -13,7 +13,6 @@ $(document).ready(function() {
   var userName = '@billytweet';
   $.actionFavorite = $('.tweet-actions > ul :nth-child(3)');
   $.actionRetweet = $('.tweet-actions > ul :nth-child(2)');
-
   $.reTweet;
 
   function newTweet(tweet, reTweet) {
@@ -26,7 +25,7 @@ $(document).ready(function() {
     }
 
     $('#stream').prepend(function() {
-      return '<div class="tweet"> <div class="content"> <img class="avatar" src="img/alagoon.jpg" /> <strong class="fullname">Billy Tweet</strong> <span class="username">@billytweet</span> <p class="tweet-text">' + tweet + '</p> <div class="tweet-actions"> <ul> <li><span class="icon action-reply"></span> Reply</li> <li><span class="icon action-retweet"></span> Retweet</li> <li><span class="icon action-favorite"></span> Favorite</li> <li><span class="icon action-more"></span> More</li> </ul> </div> <div class="stats"> <div class="retweets"> <p class="num-retweets">0</p> <p>RETWEETS</p> </div> <div class="favorites"> <p class="num-favorites">0</p> <p>FAVORITES</p> </div> <div class="users-interact"> <div> <img src="img/alagoon.jpg" /> <img src="img/alagoon.jpg" /> </div> </div> <div class="time">' +  $.timeago(new Date()); + ' </div> </div> <div class="reply"> <img class="avatar" src="img/alagoon.jpg" /> <textarea class="tweet-compose" placeholder="Reply to @billytweet"/></textarea> </div> </div> </div>';
+      return '<div class="tweet"> <div class="content"> <img class="avatar" src="img/alagoon.jpg" /> <strong class="fullname">Billy Tweet</strong> <span class="username">@billytweet</span> <p class="tweet-text">' + tweet + '</p> <div class="tweet-actions"> <ul> <li><span class="icon action-reply"></span> Reply</li> <li><span class="icon action-retweet"></span> Retweet</li> <li><span class="icon action-favorite"></span> Favorite</li> <li><span class="icon action-more"></span> More</li> </ul> </div> <div class="stats"> <div class="retweets"> <p class="num-retweets">0</p> <p>RETWEETS</p> </div> <div class="favorites"> <p class="num-favorites">0</p> <p>FAVORITES</p> </div> <div class="users-interact"> <div> <img src="img/alagoon.jpg" /> </div> </div> <div class="time">' +  $.timeago(new Date()); + ' </div> </div> <div class="reply"> <img class="avatar" src="img/alagoon.jpg" /> <textarea class="tweet-compose" placeholder="Reply to @billytweet"/></textarea> </div> </div> </div>';
     });
   }
 
@@ -35,15 +34,24 @@ $(document).ready(function() {
     $('.reply').hide();
     $(this).find('.stats').show();
     $(this).find('.reply').show();
-  })
+  });
 
-  $('.content').mouseenter(function() {
-    $(this).find('.tweet-actions').show();
-  })
+  // $('.content').mouseenter(function() {
+  //   $(this).find('.tweet-actions').show();
+  // });
+  //
+  // $('.content').mouseleave(function() {
+  //   $('.tweet-actions').hide();
+  // })
 
-  $('.content').mouseleave(function() {
-    $('.tweet-actions').hide();
-  })
+  $('body').on({
+    mouseenter: function() {
+      $(this).find('.tweet-actions').show();
+    },
+    mouseleave: function() {
+      $('.tweet-actions').hide();
+    }
+  }, '.content');
 
   $('.tweet-compose').on('click', function() {
     $(this).height(100);
@@ -73,7 +81,13 @@ $(document).ready(function() {
     newTweet(tweet);
   });
 
-  actionFavorite.on('click', function() {
+  // actionFavorite.on('click', function() {
+  //   var target = $(this).parents('.content').find('.num-favorites');
+  //   var favorites = Number($(target).text());
+  //   $(target).text(favorites += 1);
+  // })
+
+  $('#stream').on('click', '.tweet-actions > ul :nth-child(3)', function() {
     var target = $(this).parents('.content').find('.num-favorites');
     var favorites = Number($(target).text());
     $(target).text(favorites += 1);
