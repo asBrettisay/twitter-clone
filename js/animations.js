@@ -8,6 +8,7 @@ $(document).ready(function() {
     return $(this).parents('.content').find('.fullname').text();
   }});
 
+  var initializing = true;
   var mainTweetBody = $('#dashboard > .tweet-compose');
   var tweetLength = $('.tweet-compose').val().length;
   var charCount = $('#char-count');
@@ -19,17 +20,61 @@ $(document).ready(function() {
   $.actionRetweet = $('.tweet-actions > ul :nth-child(2)');
   $.reTweet;
 
-  function newTweet(tweet, reTweet) {
+  // If local storage exists, retrieve it.
+  var localDataInitialize = function() {
+    if (localStorage['twitterCloneData']) {
+      return JSON.parse(localStorage['twitterCloneData'])
+    } else {
+      return [];
+    }
+  };
+  var localData = localDataInitialize();
+
+
+  var populateFeed = function() {
+    localData.forEach(function(tweet) {
+      newTweet(tweet.tweet, tweet.tweetId);
+    })
+    initializing = false;
+  }
+  populateFeed();
+
+  function updateLocalStorage() {
+    localStorage.setItem('twitterCloneData', JSON.stringify(localData));
+  }
+  // Generate unique ids for tweets.
+  function generateId() {
+    var rand = Math.floor(Math.random() * 26) + Date.now();
+    return rand++;
+  };
+
+
+  function newTweet(tweet, tweetId) {
     // tweet = tweet text(string).
-    // reTweet = An array containing the target to be retweeted.
+    // tweetId = A unique ID that must be generated before this function is invoked.
     if ($.reTweet) {
       var num = Number($.reTweet.target.text());
       $.reTweet.target.text(num += 1);
       $.reTweet = null;
+      localData.forEach(function(tweet) {
+        if (tweet.tweetId === $.reTweet.id) {
+          tweet.retweets++;
+        }
+      })
+      localStorage.setItem('twitterCloneData', JSON.stringify(localData));
+    } else if (!initializing) {
+      localData.push({
+        tweetId: tweetId,
+        author: '@billytweet',
+        tweet: tweet,
+        favorites: 0,
+        retweets: 0
+      });
+      localStorage.setItem('twitterCloneData', JSON.stringify(localData));
     }
 
     $('#stream').prepend(function() {
-      return '<div class="tweet"> <div class="content"> <img class="avatar" src="img/alagoon.jpg" /> <strong class="fullname">Billy Tweet</strong> <span class="username">@billytweet</span> <p class="tweet-text">' + tweet + '</p> <div class="tweet-actions"> <ul> <li><span class="icon action-reply"></span> Reply</li> <li><span class="icon action-retweet"></span> Retweet</li> <li><span class="icon action-favorite"></span> Favorite</li> <li><span class="icon action-more"></span> More</li> </ul> </div> <div class="stats"> <div class="retweets"> <p class="num-retweets">0</p> <p>RETWEETS</p> </div> <div class="favorites"> <p class="num-favorites">0</p> <p>FAVORITES</p> </div> <div class="users-interact"> <div> <img src="img/alagoon.jpg" /> </div> </div> <div class="time">' +  $.timeago(new Date()); + ' </div> </div> <div class="reply"> <img class="avatar" src="img/alagoon.jpg" /> <textarea class="tweet-compose" placeholder="Reply to @billytweet"/></textarea> </div> </div> </div>';
+      return '<div class="tweet" id=' + String(localData[localData.length-1].tweetId) + '> <div class="content"> <img class="avatar" src="img/alagoon.jpg" /> <strong class="fullname">Billy Tweet</strong> <span class="username">@billytweet</span> <p class="tweet-text">' + tweet + '</p> <div class="tweet-actions"> <ul> <li><span class="icon action-reply"></span> Reply</li> <li><span class="icon action-retweet"></span> Retweet</li> <li><span class="icon action-favorite"></span> Favorite</li> <li><span class="icon action-more"></span> More</li> </ul> </div> <div class="stats"> <div class="retweets"> <p class="num-retweets">0</p> <p>RETWEETS</p> </div> <div class="favorites"> <p class="num-favorites">0</p> <p>FAVORITES</p> </div> <div class="users-interact"> <div> <img src="img/alagoon.jpg" /> </div> </div> <div class="time">' +  $.timeago(new Date()); + ' </div> </div> <div class="reply"> <img class="avatar" src="img/alagoon.jpg" /> <textarea class="tweet-compose" placeholder="Reply to @billytweet"/></textarea> </div> </div> </div>';
     });
   }
 
@@ -84,22 +129,31 @@ $(document).ready(function() {
     $('#tweet-controls').css("display", "none");
     newTweet(tweet);
   });
-
+  //Favorite action.
   $('#stream').on('click', '.tweet-actions > ul :nth-child(3)', function() {
     var target = $(this).parents('.content').find('.num-favorites');
     var favorites = Number($(target).text());
+    var tweetId = $(this).parents('.tweet').attr('id');
+
+    localData.forEach(function(tweet) {
+      if (tweet.tweetId === tweetId) {
+        tweet.favorites++;
+        updateLocalStorage();
+      }
+    })
     $(target).text(favorites += 1);
   })
 
 
-
+  // Retweet action.
   $('#stream').on('click', '.tweet-actions > ul :nth-child(2)', function () {
     var target = $(this).parents('.content').find('.num-retweets');
-    var retweets = Number($(target).text());
+    var tweetId = $(this).parents('.tweet').attr('id');
     var targetTweet = $(this).parents('.content').find('.tweet-text').text();
     var targetUserName = $(this).parents('.content').find('.username').text();
+
     $('#mainTweetBody').val('RT ' + targetUserName + ": " + targetTweet);
-    $.reTweet = {reTweet: true, target: target}
+    $.reTweet = {reTweet: true, target: target, id: tweetId }
   })
 
 
