@@ -1,8 +1,12 @@
 $(document).ready(function() {
+  $('[data-toggle="tooltip"]').tooltip();
   $('.tweet-actions').hide();
   $('.stats').hide();
   $('.reply').hide();
   $("time.timeago").timeago();
+  $('.avatar').tooltip({title: function() {
+    return $(this).parents('.content').find('.fullname').text();
+  }});
 
   var mainTweetBody = $('#dashboard > .tweet-compose');
   var tweetLength = $('.tweet-compose').val().length;
@@ -81,26 +85,13 @@ $(document).ready(function() {
     newTweet(tweet);
   });
 
-  // actionFavorite.on('click', function() {
-  //   var target = $(this).parents('.content').find('.num-favorites');
-  //   var favorites = Number($(target).text());
-  //   $(target).text(favorites += 1);
-  // })
-
   $('#stream').on('click', '.tweet-actions > ul :nth-child(3)', function() {
     var target = $(this).parents('.content').find('.num-favorites');
     var favorites = Number($(target).text());
     $(target).text(favorites += 1);
   })
 
-  // actionRetweet.on('click', function () {
-  //   var target = $(this).parents('.content').find('.num-retweets');
-  //   var retweets = Number($(target).text());
-  //   var targetTweet = $(this).parents('.content').find('.tweet-text').text();
-  //   var targetUserName = $(this).parents('.content').find('.username').text();
-  //   $('#mainTweetBody').val('RT ' + targetUserName + ": " + targetTweet);
-  //   $.reTweet = {reTweet: true, target: target}
-  // })
+
 
   $('#stream').on('click', '.tweet-actions > ul :nth-child(2)', function () {
     var target = $(this).parents('.content').find('.num-retweets');
